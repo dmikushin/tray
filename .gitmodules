@@ -1,0 +1,3 @@
+[submodule "ThirdParty/UGlobalHotkey"]
+	path = ThirdParty/UGlobalHotkey
+	url = https://github.com/NCirit/UGlobalHotkey.git

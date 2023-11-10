@@ -1,9 +1,15 @@
 #include "QtTrayMenu.h"
 #include <QApplication>
+#include <QShortcut>
+#include <QKeySequence>
+
 #include "tray.h"
+
+#include <iostream>
 
 static QtTrayMenu *trayMenuInstance = nullptr;
 static struct tray *currentTrayStruct = nullptr;
+hotkey_handler hk_handler = NULL;
 
 extern "C"
 {
@@ -63,17 +69,21 @@ void tray_unregister_hotkey(const char* hotkey)
 
 void set_hotkey_handler(hotkey_handler handle)
 {
-
+    hk_handler = handle;
 }
 
 char tray_register_hotkey(const char* hotkey)
 {
+    if(!trayMenuInstance)
+        return -1;
+
+    trayMenuInstance->registerShortcut(QString::fromUtf8(hotkey));
     return 0;
 }
 
 void tray_unregister_hotkey(const char* hotkey)
 {
-
+    trayMenuInstance->unregisterShortcut(QString::fromUtf8(hotkey));
 }
 
 } // extern "C"

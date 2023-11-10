@@ -57,6 +57,11 @@ else()
 	endif()
 endif()
 
+if(UNIX)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/UGlobalHotkey)
+target_link_libraries(tray PRIVATE uglobalhotkeys)
+endif()
+
 INSTALL(TARGETS tray DESTINATION lib)
 
 IF(NOT WIN32)

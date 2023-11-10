@@ -1,9 +1,13 @@
 #include "QtTrayMenu.h"
+
 #include <QApplication>
+#include <iostream>
+#include "uglobalhotkeys.h"
 
 int argc = 1;
 char *argvArray[] = {(char*)"TrayMenuApp", nullptr};
 bool debug = false;
+extern hotkey_handler hk_handler;
 
 QtTrayMenu::QtTrayMenu()
         : trayIcon(nullptr), trayStruct(nullptr), continueRunning(true), app(nullptr)
@@ -21,12 +25,17 @@ QtTrayMenu::QtTrayMenu()
     }
     if (debug)
         app->installEventFilter(this);
+    
+    hotkeys = new UGlobalHotkeys();
+    QApplication::connect(hotkeys, &UGlobalHotkeys::activated, this, &QtTrayMenu::onShortcutPressed);
 }
 
 QtTrayMenu::~QtTrayMenu()
 {
     delete trayIcon;
     trayIcon = nullptr; // Set to nullptr after deletion
+    delete hotkeys;
+    hotkeys = nullptr;
 
     // Delete app only if it was created within this class
     if (app && app != QApplication::instance())
@@ -159,4 +168,31 @@ struct tray_menu_item *QtTrayMenu::getTrayMenuItem(QAction *action)
 
 void QtTrayMenu::onExitRequested() {
     app->quit();
+}
+
+void QtTrayMenu::registerShortcut(const QString &shortcut)
+{
+
+    int id = qHash(shortcut);
+    if(shortcuts.find(id) == shortcuts.end())
+    {
+        hotkeys->registerHotkey(shortcut, id);
+        shortcuts[id] = shortcut;
+    }
+}
+
+void QtTrayMenu::unregisterShortcut(const QString &shortcut)
+{
+    int id = qHash(shortcut);
+    if(shortcuts.find(id) != shortcuts.end())
+    {
+        hotkeys->unregisterHotkey(id);
+        shortcuts.remove(id);
+    }
+}
+
+void QtTrayMenu::onShortcutPressed(int id)
+{
+    if(hk_handler)
+        hk_handler(shortcuts[id].toStdString().c_str());
 }
