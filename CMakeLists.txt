@@ -9,9 +9,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
-find_package (PkgConfig REQUIRED)
-
+if(NOT WIN32)
+    find_package (PkgConfig REQUIRED)
+endif()
 
 file(GLOB SRCS
         ${CMAKE_CURRENT_LIST_DIR}/*.h
