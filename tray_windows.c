@@ -143,28 +143,23 @@ void _destroy_icon_cache() {
   icon_info_count = 0;
 }
 
-HICON _fetch_cached_icon(const char * path, enum IconType icon_type) {
-  for (int i = 0; i < icon_info_count; ++i) {
-    if (strcmp(icon_infos[i].path, path) == 0) {
-      switch (icon_type) {
-        case REGULAR:
-          return icon_infos[i].icon;
-        case LARGE:
-          return icon_infos[i].large_icon;
-        case NOTIFICATION:
-          return icon_infos[i].notification_icon;
-      }
-    }
+HICON _fetch_cached_icon(struct icon_info *icon_record, enum IconType icon_type) {
+  switch (icon_type) {
+    case REGULAR:
+      return icon_record->icon;
+    case LARGE:
+      return icon_record->large_icon;
+    case NOTIFICATION:
+      return icon_record->notification_icon;
   }
-
-  return NULL;
 }
 
 HICON _fetch_icon(const char * path, enum IconType icon_type) {
-  HICON value = _fetch_cached_icon(path, icon_type);
-
-  if (value != NULL) {
-    return value;
+  // Find a cached icon by path
+  for (int i = 0; i < icon_info_count; ++i) {
+    if (strcmp(icon_infos[i].path, path) == 0) {
+      return _fetch_cached_icon(&icon_infos[i], icon_type);
+    }
   }
 
   // Expand cache, fetch, and retry
@@ -173,7 +168,7 @@ HICON _fetch_icon(const char * path, enum IconType icon_type) {
   int index = icon_info_count - 1;
   icon_infos[icon_info_count - 1] = _create_icon_info(path);
 
-  return _fetch_icon(path, icon_type);
+  return _fetch_cached_icon(&icon_infos[icon_info_count - 1], icon_type);
 }
 
 int tray_init(struct tray *tray) {
