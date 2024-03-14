@@ -111,7 +111,12 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
 struct icon_info _create_icon_info(const char * path) {
   struct icon_info info;
   info.path = strdup(path);
-  ExtractIconEx(path, 0, &info.large_icon, &info.icon, 1);
+
+  // These must be separate invocations otherwise Windows may opt to only return large or small icons.
+  // MSDN does not explicitly state this anywhere, but it has been observed on some machines.
+  ExtractIconEx(path, 0, &info.large_icon, NULL, 1);
+  ExtractIconEx(path, 0, NULL, &info.icon, 1);
+
   info.notification_icon = LoadImageA(NULL, path, IMAGE_ICON, GetSystemMetrics(SM_CXICON) * 2, GetSystemMetrics(SM_CYICON) * 2, LR_LOADFROMFILE);
   return info;
 }
