@@ -110,7 +110,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
 
 struct icon_info _create_icon_info(const char * path) {
   struct icon_info info;
-  info.path = path;
+  info.path = strdup(path);
   ExtractIconEx(path, 0, &info.large_icon, &info.icon, 1);
   info.notification_icon = LoadImageA(NULL, path, IMAGE_ICON, GetSystemMetrics(SM_CXICON) * 2, GetSystemMetrics(SM_CYICON) * 2, LR_LOADFROMFILE);
   return info;
@@ -130,6 +130,7 @@ void _destroy_icon_cache() {
     DestroyIcon(icon_infos[i].icon);
     DestroyIcon(icon_infos[i].large_icon);
     DestroyIcon(icon_infos[i].notification_icon);
+    free((void*) icon_infos[i].path);
   }
 
   free(icon_infos);
