@@ -25,10 +25,10 @@ void set_hotkey_handler(hotkey_handler handler)
 static UINT parse_mode(const char* hotkey)
 {
   UINT mode = 0;
-  mode |= strstr(hotkey, "ctrl+") != NULL ? MOD_CONTROL : 0;
-  mode |= strstr(hotkey, "win+") != NULL ? MOD_WIN : 0;
-  mode |= strstr(hotkey, "shift+") != NULL ? MOD_SHIFT : 0;
-  mode |= strstr(hotkey, "alt+") != NULL ? MOD_ALT : 0;
+  mode |= strstr(hotkey, "ctrl+") != NULL || strstr(hotkey, "CTRL+") ? MOD_CONTROL : 0;
+  mode |= strstr(hotkey, "win+") != NULL || strstr(hotkey, "WIN+") != NULL  ? MOD_WIN : 0;
+  mode |= strstr(hotkey, "shift+") != NULL || strstr(hotkey, "SHIFT+") != NULL  ? MOD_SHIFT : 0;
+  mode |= strstr(hotkey, "alt+") != NULL || strstr(hotkey, "ALT+") != NULL  ? MOD_ALT : 0;
 
   return mode;
 }
@@ -43,9 +43,21 @@ static UINT parse_key(const char* hotkey)
   return VkKeyScanExA(ckey[0], GetKeyboardLayout(0));
 }
 
+static void cleanup()
+{
+  Shell_NotifyIcon(NIM_DELETE, &nid);
+  if (nid.hIcon != 0) {
+    DestroyIcon(nid.hIcon);
+  }
+  if (hmenu != 0) {
+    DestroyMenu(hmenu);
+  }
+  DestroyWindow(hwnd);
+  UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
+}
+
 char tray_register_hotkey(const char* hotkey)
 {
-  hotkey = strlwr(hotkey);
   UINT key = parse_key(hotkey);
 
   if(key == -1)
@@ -126,9 +138,6 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
         UnregisterHotKey(hwnd, hotkeyId);
         break;
       }
-
-      hotkey[size - 1] = GetKeyState(VK_CAPITAL) & 1 ?
-        toupper(hotkey[size - 1]) : tolower(hotkey[size - 1]);
 
       if(hk_handler)
         hk_handler(hotkey);
@@ -221,6 +230,7 @@ int tray_loop(int blocking) {
     PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE);
   }
   if (msg.message == WM_QUIT) {
+    cleanup();
     return -1;
   }
   TranslateMessage(&msg);
@@ -257,14 +267,6 @@ void tray_exit(void) {
     return;
   }
   exit_was_called = TRUE;
-  Shell_NotifyIcon(NIM_DELETE, &nid);
-  if (nid.hIcon != 0) {
-    DestroyIcon(nid.hIcon);
-  }
-  if (hmenu != 0) {
-    DestroyMenu(hmenu);
-  }
-  DestroyWindow(hwnd);
-  UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
+  PostMessage(hwnd, WM_QUIT, NULL, NULL);
 }
 
