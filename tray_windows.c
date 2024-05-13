@@ -267,6 +267,6 @@ void tray_exit(void) {
     return;
   }
   exit_was_called = TRUE;
-  PostMessage(hwnd, WM_QUIT, NULL, NULL);
+  PostMessage(hwnd, WM_QUIT, 0, 0);
 }
 
