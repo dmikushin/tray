@@ -111,7 +111,7 @@ void QtTrayMenu::createMenu(struct tray_menu_item *items, QMenu *menu)
     {
         auto *action = new QAction(QString::fromUtf8(items->text), menu);
         action->setDisabled(items->disabled == 1);
-        action->setCheckable(true);
+        action->setCheckable(items->checkbox);
         action->setChecked(items->checked == 1);
         action->setProperty("tray_menu_item", QVariant::fromValue((void *)items));
         connect(action, &QAction::triggered, this, &QtTrayMenu::onMenuItemTriggered);

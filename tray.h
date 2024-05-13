@@ -31,6 +31,9 @@ struct tray_menu_item {
   const char *text;
   int disabled;
   int checked;
+  int checkbox;
+  
+  void *context;
   void (*cb)(struct tray_menu_item *);
   struct tray_menu_item *submenu;
 };

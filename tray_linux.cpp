@@ -46,4 +46,34 @@ TRAY_EXPORT void tray_exit(void)
     }
 }
 
+void set_hotkey_handler(hotkey_handler handle)
+{
+
+}
+
+char tray_register_hotkey(const char* hotkey)
+{
+    return 0;
+}
+
+void tray_unregister_hotkey(const char* hotkey)
+{
+
+}
+
+void set_hotkey_handler(hotkey_handler handle)
+{
+
+}
+
+char tray_register_hotkey(const char* hotkey)
+{
+    return 0;
+}
+
+void tray_unregister_hotkey(const char* hotkey)
+{
+
+}
+
 } // extern "C"
