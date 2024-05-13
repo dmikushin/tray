@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <shellapi.h>
+#include <stdio.h>
+
 #include "tray.h"
 
 #define WM_TRAY_CALLBACK_MESSAGE (WM_USER + 1)
@@ -13,6 +15,67 @@ static HWND hwnd;
 static HMENU hmenu = NULL;
 static UINT wm_taskbarcreated;
 static BOOL exit_was_called = FALSE;
+static hotkey_handler hk_handler = NULL;
+
+void set_hotkey_handler(hotkey_handler handler)
+{
+  hk_handler = handler;
+}
+
+static UINT parse_mode(const char* hotkey)
+{
+  UINT mode = 0;
+  mode |= strstr(hotkey, "ctrl+") != NULL ? MOD_CONTROL : 0;
+  mode |= strstr(hotkey, "win+") != NULL ? MOD_WIN : 0;
+  mode |= strstr(hotkey, "shift+") != NULL ? MOD_SHIFT : 0;
+  mode |= strstr(hotkey, "alt+") != NULL ? MOD_ALT : 0;
+
+  return mode;
+}
+
+static UINT parse_key(const char* hotkey)
+{
+  UINT key = 0;
+  char *ckey = strrchr(hotkey, '+');
+  if(ckey == NULL || strlen(++ckey) != 1)
+    return -1;
+
+  return VkKeyScanExA(ckey[0], GetKeyboardLayout(0));
+}
+
+char tray_register_hotkey(const char* hotkey)
+{
+  hotkey = strlwr(hotkey);
+  UINT key = parse_key(hotkey);
+
+  if(key == -1)
+  {
+    fprintf(stderr, "Invalid shortcut key. Only single charcter keys supported.\n");
+    return -1;
+  }
+
+  ATOM shortcutId = GlobalAddAtomA(hotkey);
+
+  if (RegisterHotKey(hwnd, shortcutId, parse_mode(hotkey) | MOD_NOREPEAT, key))
+      return 0;
+  
+  int r = GetLastError();
+
+  if(r == 1409) // already registered
+    return 0;
+
+  fprintf(stderr, "[Error code %d] Hotkey %s registration failed.\n", r, hotkey);
+  return -1;
+
+}
+
+void tray_unregister_hotkey(const char* hotkey)
+{
+  printf("Unregistering %s\n", hotkey);
+  ATOM shortcutId = GlobalAddAtomA(hotkey);
+  UnregisterHotKey(hwnd, shortcutId);
+  GlobalDeleteAtom(shortcutId);
+}
 
 static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
                                        LPARAM lparam) {
@@ -53,6 +116,24 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
       return 0;
     }
     break;
+  case WM_HOTKEY:
+    {
+      int hotkeyId = (int)(wparam);
+      char hotkey[128] = {0};
+      int size = GlobalGetAtomNameA(hotkeyId, &hotkey, sizeof(hotkey));
+      if(size == 0)
+      {
+        UnregisterHotKey(hwnd, hotkeyId);
+        break;
+      }
+
+      hotkey[size - 1] = GetKeyState(VK_CAPITAL) & 1 ?
+        toupper(hotkey[size - 1]) : tolower(hotkey[size - 1]);
+
+      if(hk_handler)
+        hk_handler(hotkey);
+      break;
+    }
   }
 
   if (msg == wm_taskbarcreated) {
