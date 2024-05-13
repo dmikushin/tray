@@ -54,8 +54,12 @@ TRAY_EXPORT
 void tray_exit(void);
 
 typedef void(*hotkey_handler)(const char*);
+
+TRAY_EXPORT
 void set_hotkey_handler(hotkey_handler handle);
+TRAY_EXPORT
 char tray_register_hotkey(const char* hotkey);
+TRAY_EXPORT
 void tray_unregister_hotkey(const char* hotkey);
 
 #ifdef __cplusplus
