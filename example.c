@@ -27,7 +27,7 @@
 #define TRAY_ICON2 "icon2.ico"
 #endif
 
-void window_cb() {
+void window_cb(struct tray *) {
   printf("window cb: this is where you would make a window visible.\n");
 }
 
