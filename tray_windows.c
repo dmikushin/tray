@@ -132,7 +132,7 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
     {
       int hotkeyId = (int)(wparam);
       char hotkey[128] = {0};
-      int size = GlobalGetAtomNameA(hotkeyId, &hotkey, sizeof(hotkey));
+      int size = GlobalGetAtomNameA(hotkeyId, hotkey, sizeof(hotkey));
       if(size == 0)
       {
         UnregisterHotKey(hwnd, hotkeyId);

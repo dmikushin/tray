@@ -1,6 +1,7 @@
 #include "QtTrayMenu.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <iostream>
 #include "uglobalhotkeys.h"
 
