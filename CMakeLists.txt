@@ -32,10 +32,10 @@ else()
 	endif()
 endif()
 
-add_library(tray SHARED ${SRCS})
+add_library(tray ${SRCS})
 set_property(TARGET tray PROPERTY C_STANDARD 99)
 target_compile_definitions(tray PRIVATE TRAY_EXPORTS)
-set_target_properties(tray PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(tray PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
 	target_compile_definitions(tray PRIVATE TRAY_WINAPI=1 WIN32_LEAN_AND_MEAN NOMINMAX)
